@@ -1,0 +1,32 @@
+{
+    "name": "profesia/correlation-id",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Matej Bádal",
+            "email": "matej.badal@profesia.sk"
+        }
+    ],
+    "require": {
+        "php": ">=8.0",
+        "ramsey/uuid": "^4.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "Profesia\\CorrelationId\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Profesia\\CorrelationId\\Test\\": "tests/"
+        }
+    },
+    "require-dev": {
+        "mockery/mockery": "^1.5",
+        "phpunit/phpunit": "^9.6"
+    },
+    "scripts": {
+        "test": "XDEBUG_MODE=coverage ./vendor/bin/phpunit"
+    }
+}

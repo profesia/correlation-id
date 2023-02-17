@@ -1,5 +1,6 @@
 {
     "name": "profesia/correlation-id",
+    "description": "Utils for working with correlation ID",
     "type": "library",
     "license": "MIT",
     "authors": [

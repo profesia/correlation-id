@@ -4,23 +4,19 @@ declare(strict_types=1);
 
 namespace Profesia\CorrelatioId\Test\Integration\Resolver;
 
-use Mockery;
-use Mockery\Adapter\Phpunit\MockeryTestCase;
-use Mockery\MockInterface;
-use Profesia\CorrelationId\Generator\CorrelationIdGeneratorInterface;
+use PHPUnit\Framework\TestCase;
+use Profesia\CorrelationId\Test\Assets\NullCorrelationIdStorage;
 use Profesia\CorrelationId\Resolver\CorrelationIdResolver;
+use Profesia\CorrelationId\Test\Assets\TestUuidGenerator;
 
-class CorrelationIdResolverTest extends MockeryTestCase
+class CorrelationIdResolverTest extends TestCase
 {
     public function testCanResolveIdFromEnvironmentParam(): void
     {
-        /** @var MockInterface|CorrelationIdGeneratorInterface $generator */
-        $generator = Mockery::mock(CorrelationIdGeneratorInterface::class);
-        $generator->shouldNotHaveReceived();
-
         $key      = 'key';
         $resolver = new CorrelationIdResolver(
-            $generator,
+            new TestUuidGenerator(),
+            new NullCorrelationIdStorage(),
             $key
         );
 
@@ -30,47 +26,28 @@ class CorrelationIdResolverTest extends MockeryTestCase
 
     public function testCanGenerateIdWhenEnvIdIsNotSet(): void
     {
-        $uuid = '7e8e94e2-bf74-4a52-a6de-5d33a8bd0836';
-        /** @var MockInterface|CorrelationIdGeneratorInterface $generator */
-        $generator = Mockery::mock(CorrelationIdGeneratorInterface::class);
-        $generator
-                ->shouldReceive('generate')
-                ->once()
-                ->andReturn($uuid);
-
         $key      = '';
         $resolver = new CorrelationIdResolver(
-            $generator,
+            new TestUuidGenerator(),
+            new NullCorrelationIdStorage(),
             $key
         );
 
         $resolvedId = $resolver->resolve();
-        $this->assertEquals($uuid, $resolvedId);
+        $this->assertEquals(TestUuidGenerator::VALUE, $resolvedId);
     }
 
     public function testCanStoreGeneratedIdIntoServer(): void
     {
-        /** @var MockInterface|CorrelationIdGeneratorInterface $generator */
-        $generator = Mockery::mock(CorrelationIdGeneratorInterface::class);
-        $generator->shouldNotHaveReceived();
-
+        $generator = new TestUuidGenerator();
         $resolver = new CorrelationIdResolver(
             $generator,
+            new NullCorrelationIdStorage(),
             'test'
         );
 
+        $this->assertEquals(null, getenv('test'));
         $resolver->store();
-
-        /** @var MockInterface|CorrelationIdGeneratorInterface $generator */
-        $generator = Mockery::mock(CorrelationIdGeneratorInterface::class);
-        $generator->shouldNotHaveReceived();
-
-        $resolver = new CorrelationIdResolver(
-            $generator,
-            'key'
-        );
-
-        $this->expectExceptionObject(new \RuntimeException('Not valid scenario'));
-        $resolver->store();
+        $this->assertEquals('test', getenv('test'));
     }
 }

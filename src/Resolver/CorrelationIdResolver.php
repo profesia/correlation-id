@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Profesia\CorrelationId\Resolver;
 
 use Profesia\CorrelationId\Generator\CorrelationIdGeneratorInterface;
+use Profesia\CorrelationId\Storage\CorrelationIdStorageInterface;
 
 class CorrelationIdResolver
 {
@@ -12,6 +13,7 @@ class CorrelationIdResolver
 
     public function __construct(
         private CorrelationIdGeneratorInterface $generator,
+        private CorrelationIdStorageInterface $storage,
         private string $correlationIdKey,
         private bool $alwaysCheckEnv = false,
     ) {
@@ -36,17 +38,6 @@ class CorrelationIdResolver
 
     public function store(): void
     {
-        $generatedId = $this->resolve();
-
-        putenv($this->correlationIdKey . "={$generatedId}");
-
-        $phpSapiName = php_sapi_name();
-
-        if (
-            is_string($phpSapiName)
-            && str_starts_with($phpSapiName, 'apache') === true
-        ) {
-            apache_setenv($this->correlationIdKey, $generatedId);
-        }
+        $this->storage->store($this->correlationIdKey, $this->resolve());
     }
 }

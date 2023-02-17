@@ -20,7 +20,8 @@
     "autoload-dev": {
         "psr-4": {
             "Profesia\\CorrelationId\\Test\\": "tests/"
-        }
+        },
+        "files": ["tests/mocks.php"]
     },
     "require-dev": {
         "mockery/mockery": "^1.5",

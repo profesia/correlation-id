@@ -9,35 +9,29 @@ use Profesia\CorrelationId\Storage\CorrelationIdStorageInterface;
 
 class CorrelationIdResolver
 {
-    private ?string $generatedId;
-
     public function __construct(
         private CorrelationIdGeneratorInterface $generator,
         private CorrelationIdStorageInterface $storage,
-        private string $correlationIdKey,
-        private bool $alwaysCheckEnv = false,
+        private string $correlationIdKey
     ) {
-        $this->generatedId = null;
     }
 
     public function resolve(): string
     {
-        if ($this->alwaysCheckEnv === false && $this->generatedId !== null) {
-            return $this->generatedId;
-        }
-
-        $alreadyGeneratedCorrelationId = getenv($this->correlationIdKey);
-        if ($alreadyGeneratedCorrelationId === '' || $alreadyGeneratedCorrelationId === false) {
+        $alreadyGeneratedCorrelationId = $this->storage->read($this->correlationIdKey);
+        if ($alreadyGeneratedCorrelationId === null) {
             $alreadyGeneratedCorrelationId = $this->generator->generate();
         }
 
-        $this->generatedId = $alreadyGeneratedCorrelationId;
-
-        return $this->generatedId;
+        return $alreadyGeneratedCorrelationId;
     }
 
-    public function store(): void
+    public function store(?string $value = null): void
     {
-        $this->storage->store($this->correlationIdKey, $this->resolve());
+        if ($value === null) {
+            $value = $this->resolve();
+        }
+
+        $this->storage->store($this->correlationIdKey, $value);
     }
 }

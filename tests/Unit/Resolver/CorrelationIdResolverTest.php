@@ -4,24 +4,38 @@ declare(strict_types=1);
 
 namespace Profesia\CorrelationId\Test\Unit\Resolver;
 
+use Mockery;
 use Mockery\Adapter\Phpunit\MockeryTestCase;
 use Mockery\MockInterface;
-use Mockery;
 use Profesia\CorrelationId\Generator\CorrelationIdGeneratorInterface;
 use Profesia\CorrelationId\Resolver\CorrelationIdResolver;
 use Profesia\CorrelationId\Storage\CorrelationIdStorageInterface;
+use Profesia\CorrelationId\Test\Assets\TestUuidGenerator;
 
 class CorrelationIdResolverTest extends MockeryTestCase
 {
-    public function testCanResolve(): void
+    public function testCanResolveFromEnv(): void
     {
+        $key = 'key';
+
         /** @var MockInterface|CorrelationIdGeneratorInterface $generator */
         $generator = Mockery::mock(CorrelationIdGeneratorInterface::class);
+        $generator
+            ->shouldNotReceive('generate');
 
         /** @var MockInterface|CorrelationIdStorageInterface $storage */
         $storage = Mockery::mock(CorrelationIdStorageInterface::class);
+        $storage
+            ->shouldReceive('read')
+            ->once()
+            ->withArgs(
+                [
+                    $key,
+                ]
+            )->andReturn(
+                $key
+            );
 
-        $key      = 'key';
         $resolver = new CorrelationIdResolver(
             $generator,
             $storage,
@@ -30,6 +44,24 @@ class CorrelationIdResolverTest extends MockeryTestCase
 
         $correlationId = $resolver->resolve();
         $this->assertEquals($key, $correlationId);
+    }
+
+    public function testCanResolveViaGenerator(): void
+    {
+        $key = 'empty-string';
+
+        /** @var MockInterface|CorrelationIdStorageInterface $storage */
+        $storage = Mockery::mock(CorrelationIdStorageInterface::class);
+        $storage
+            ->shouldReceive('read')
+            ->once()
+            ->withArgs(
+                [
+                    $key
+                ]
+            )->andReturn(
+                null
+            );
 
         $uuid = '7e8e94e2-bf74-4a52-a6de-5d33a8bd0836';
         /** @var MockInterface|CorrelationIdGeneratorInterface $generator */
@@ -39,7 +71,6 @@ class CorrelationIdResolverTest extends MockeryTestCase
             ->once()
             ->andReturn($uuid);
 
-        $key      = '';
         $resolver = new CorrelationIdResolver(
             $generator,
             $storage,
@@ -48,43 +79,16 @@ class CorrelationIdResolverTest extends MockeryTestCase
 
         $correlationId = $resolver->resolve();
         $this->assertEquals($uuid, $correlationId);
-
-        $sameCorrelationId = $resolver->resolve();
-        $this->assertEquals($uuid, $sameCorrelationId);
     }
 
-    public function testCanOverrideReturningOfAlreadyGenerated(): void
+    public function testCanResolveFromEnvAndStore(): void
     {
+        $key = 'key';
+
         /** @var MockInterface|CorrelationIdGeneratorInterface $generator */
         $generator = Mockery::mock(CorrelationIdGeneratorInterface::class);
         $generator
-            ->shouldReceive('generate')
-            ->times(2)
-            ->andReturn(
-                'value1',
-                'value2'
-            );
-
-        /** @var MockInterface|CorrelationIdStorageInterface $storage */
-        $storage = Mockery::mock(CorrelationIdStorageInterface::class);
-
-        $resolver = new CorrelationIdResolver(
-            $generator,
-            $storage,
-            '',
-            true
-        );
-
-        $this->assertEquals('value1', $resolver->resolve());
-        $this->assertEquals('value2', $resolver->resolve());
-    }
-
-    public function testCanStore(): void
-    {
-        /** @var MockInterface|CorrelationIdGeneratorInterface $generator */
-        $generator = Mockery::mock(CorrelationIdGeneratorInterface::class);
-
-        $key = 'storageKey';
+            ->shouldNotReceive('generate');
 
         /** @var MockInterface|CorrelationIdStorageInterface $storage */
         $storage = Mockery::mock(CorrelationIdStorageInterface::class);
@@ -97,6 +101,16 @@ class CorrelationIdResolverTest extends MockeryTestCase
                     $key,
                 ]
             );
+        $storage
+            ->shouldReceive('read')
+            ->once()
+            ->withArgs(
+                [
+                    $key
+                ]
+            )->andReturn(
+                $key
+            );
 
         $resolver = new CorrelationIdResolver(
             $generator,
@@ -105,5 +119,87 @@ class CorrelationIdResolverTest extends MockeryTestCase
         );
 
         $resolver->store();
+    }
+
+    public function testCanGenerateAndStore(): void
+    {
+        $uuid = TestUuidGenerator::VALUE;
+
+        /** @var MockInterface|CorrelationIdGeneratorInterface $generator */
+        $generator = Mockery::mock(CorrelationIdGeneratorInterface::class);
+        $generator
+            ->shouldReceive('generate')
+            ->once()
+            ->andReturn(
+                $uuid
+            );
+
+        $key = 'empty-string';
+
+        /** @var MockInterface|CorrelationIdStorageInterface $storage */
+        $storage = Mockery::mock(CorrelationIdStorageInterface::class);
+        $storage
+            ->shouldReceive('store')
+            ->once()
+            ->withArgs(
+                [
+                    $key,
+                    $uuid,
+                ]
+            );
+        $storage
+            ->shouldReceive('read')
+            ->once()
+            ->withArgs(
+                [
+                    $key
+                ]
+            )->andReturn(
+                null
+            );
+
+        $resolver = new CorrelationIdResolver(
+            $generator,
+            $storage,
+            $key,
+        );
+
+        $resolver->store();
+    }
+
+    public function testCanStoreInputParam(): void
+    {
+        $inputValue = 'test-value';
+
+        /** @var MockInterface|CorrelationIdGeneratorInterface $generator */
+        $generator = Mockery::mock(CorrelationIdGeneratorInterface::class);
+        $generator
+            ->shouldNotReceive('generate');
+
+        $key = 'testing';
+
+        /** @var MockInterface|CorrelationIdStorageInterface $storage */
+        $storage = Mockery::mock(CorrelationIdStorageInterface::class);
+        $storage
+            ->shouldReceive('store')
+            ->once()
+            ->withArgs(
+                [
+                    $key,
+                    $inputValue,
+                ]
+            );
+        $storage
+            ->shouldNotReceive('read');
+
+        $resolver = new CorrelationIdResolver(
+            $generator,
+            $storage,
+            $key,
+        );
+
+        $resolver->store(
+            $inputValue
+        );
     }
 }

@@ -7,7 +7,7 @@ namespace Profesia\CorrelationId\Resolver;
 use Profesia\CorrelationId\Generator\CorrelationIdGeneratorInterface;
 use Profesia\CorrelationId\Storage\CorrelationIdStorageInterface;
 
-class CorrelationIdResolver
+final class CorrelationIdResolver implements CorrelationIdResolverInterface
 {
     public function __construct(
         private CorrelationIdGeneratorInterface $generator,

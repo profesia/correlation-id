@@ -9,11 +9,18 @@ use Profesia\CorrelationId\Storage\CorrelationIdStorageInterface;
 
 class CorrelationIdResolver implements CorrelationIdResolverInterface
 {
+    private CorrelationIdGeneratorInterface $generator;
+    private CorrelationIdStorageInterface $storage;
+    private string $correlationIdKey;
+
     public function __construct(
-        private CorrelationIdGeneratorInterface $generator,
-        private CorrelationIdStorageInterface $storage,
-        private string $correlationIdKey
+        CorrelationIdGeneratorInterface $generator,
+        CorrelationIdStorageInterface $storage,
+        string $correlationIdKey
     ) {
+        $this->generator        = $generator;
+        $this->storage          = $storage;
+        $this->correlationIdKey = $correlationIdKey;
     }
 
     public function resolve(): string

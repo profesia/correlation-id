@@ -10,8 +10,8 @@
         }
     ],
     "require": {
-        "php": ">=8.0",
-        "ramsey/uuid": "^4.7"
+        "php": ">=7.4",
+        "ramsey/uuid": "^3.0 || ^4.7"
     },
     "autoload": {
         "psr-4": {
@@ -25,9 +25,15 @@
     },
     "require-dev": {
         "mockery/mockery": "^1.5",
-        "phpunit/phpunit": "^9.6"
+        "phpunit/phpunit": "^9.6",
+        "pestphp/pest": "^1.22"
     },
     "scripts": {
-        "test": "XDEBUG_MODE=coverage ./vendor/bin/phpunit"
+        "test": "XDEBUG_MODE=coverage ./vendor/bin/pest"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
     }
 }

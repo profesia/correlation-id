@@ -6,7 +6,7 @@ namespace Profesia\CorrelatioId\Test\Integration;
 
 use PHPUnit\Framework\TestCase;
 use Profesia\CorrelationId\Generator\Uuid4Generator;
-use Ramsey\Uuid\Rfc4122\UuidV4;
+use Ramsey\Uuid\Uuid;
 
 class Uuid4GeneratorTest extends TestCase
 {
@@ -15,7 +15,7 @@ class Uuid4GeneratorTest extends TestCase
         $generator = new Uuid4Generator();
         $generatedValue = $generator->generate();
 
-        $uuid = UuidV4::fromString($generatedValue);
+        $uuid = Uuid::fromString($generatedValue);
         $this->assertEquals(4, $uuid->getVersion());
     }
 }

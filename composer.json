@@ -25,8 +25,7 @@
     },
     "require-dev": {
         "mockery/mockery": "^1.5",
-        "phpunit/phpunit": "^9.6",
-        "pestphp/pest": "^1.22"
+        "pestphp/pest": "^1.23"
     },
     "scripts": {
         "test": "XDEBUG_MODE=coverage ./vendor/bin/pest"

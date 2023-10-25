@@ -13,7 +13,7 @@ class CorrelationIdPutenvStorage implements CorrelationIdStorageInterface
 
     public function read(string $key): ?string
     {
-        $value = getenv($key);
+        $value = getenv($key, true);
         if ($value === '' || $value === false || $value === []) {
             return null;
         }

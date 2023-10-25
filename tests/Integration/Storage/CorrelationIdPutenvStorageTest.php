@@ -16,11 +16,11 @@ class CorrelationIdPutenvStorageTest extends TestCase
         $value   = 'value';
         \putenv("$key");
 
-        $this->assertEquals(false, \getenv($key));
+        $this->assertEquals(false, \getenv($key, true));
         $this->assertEquals(null, $storage->read($key));
         $storage->store('key', $value);
 
-        $this->assertEquals($value, \getenv($key));
+        $this->assertEquals($value, \getenv($key, true));
     }
 
     public function testCanReadValue(): void

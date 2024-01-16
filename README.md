@@ -12,7 +12,7 @@ Install the latest version by running the command
 composer require profesia/correlation-id
 ```
 ## Requirements
-- PHP 8.0+
+- PHP 7.4+
 
 ## Author
 Matej Bádal - matej.badal@profesia.sk
